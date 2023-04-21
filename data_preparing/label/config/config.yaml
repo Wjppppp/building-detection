@@ -1,0 +1,20 @@
+project:
+  name: kalola
+  workspace: ./tanzania
+  project_time: 2021-3-25
+  task: object detection
+
+osm:
+  api: ohsome
+  url: https://api.ohsome.org/v1/elements/geometry
+  bboxes: [32.463226318359375, -5.032122934090069, 32.48931884765625, -5.019810836520875]
+  tags:
+    - {'label': 'building', 'key': 'building', 'value': ''}
+  timestamp: 2020-10-20
+  types: polygon
+
+image:
+  img_api: bing
+  img_url: http://t0.tiles.virtualearth.net/tiles/a{q}.png?g=854&mkt=en-US&token={token}
+  api_token : 'AhUiTb_1C9bJJJBbIuwuHOZctXHnvyeVmM5jGtErwZ5U9IYe96rJEGZ-QwIY_J9V'
+  zoom: 18

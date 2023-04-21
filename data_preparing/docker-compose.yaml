@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  ohsome2label:
+    build: .
+    # ports:
+    #   - "8000:5000"
+    volumes:
+      - type: bind
+        source: ./ohsome2label
+        target: /app
+
+volumes:
+  myapp:
