@@ -1,5 +1,7 @@
-FROM ubuntu:16.04
-# FROM python:3.6.15
+FROM ubuntu:18.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Munich
 
 # install system libraries
 RUN apt-get update &&\
@@ -14,28 +16,29 @@ RUN apt-get update &&\
         protobuf-compiler \
         python-pil \
         python-lxml \
-        python-tk
+        python-tk \
+        tzdata
 
-# install python 3.6 with ubuntu 16.04
+# install python 3.6
 RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:jblgf0/python && \
-    apt-get update -y  && \
-    apt-get install -y python3.6 python3.6-dev python3-pip && \
-    apt-get install -y git &&\
-    # update pip
-    apt -y remove --purge python3-pip && \
-    apt-get -y install curl && \
-    curl -O https://bootstrap.pypa.io/pip/3.6/get-pip.py && \
-    python3.6 get-pip.py && \
-    python3.6 -m pip --version
+    apt-get install -y python3 && \
+    apt-get install -y python3-pip
+
+RUN export PYCURL_SSL_LIBRARY=gnutls 
+RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade setuptools
+RUN pip install pycurl
+RUN pip install pandas
+RUN pip install tensorflow==1.14.0
+RUN pip install Cython
+RUN pip install matplotlib
+RUN pip install jupyter
 
 WORKDIR /app
 COPY . .
 
-RUN export PYCURL_SSL_LIBRARY=gnutls 
-RUN pip install -r requirements.txt
-RUN cd ohsome2label && \
+
+RUN cd label && \
     pip install --editable .
 
 RUN export LC_ALL=C.UTF-8 && \

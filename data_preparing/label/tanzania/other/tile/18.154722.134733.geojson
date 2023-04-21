@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[32.479738, -5.021567], [32.47964, -5.021552], [32.479646, -5.021516], [32.479744, -5.021531], [32.479738, -5.021567]]]}, "properties": {"@osmId": "way/479367854", "@snapshotTimestamp": "2020-10-20T00:00:00Z", "building": "yes", "label": "building"}}]}
