@@ -18,6 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='object_detection/protos/graph_rewriter.proto',
   package='object_detection.protos',
+  syntax='proto2',
   serialized_pb=_b('\n,object_detection/protos/graph_rewriter.proto\x12\x17object_detection.protos\"L\n\rGraphRewriter\x12;\n\x0cquantization\x18\x01 \x01(\x0b\x32%.object_detection.protos.Quantization\"Y\n\x0cQuantization\x12\x15\n\x05\x64\x65lay\x18\x01 \x01(\x05:\x06\x35\x30\x30\x30\x30\x30\x12\x16\n\x0bweight_bits\x18\x02 \x01(\x05:\x01\x38\x12\x1a\n\x0f\x61\x63tivation_bits\x18\x03 \x01(\x05:\x01\x38')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -47,6 +48,7 @@ _GRAPHREWRITER = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
@@ -91,6 +93,7 @@ _QUANTIZATION = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],

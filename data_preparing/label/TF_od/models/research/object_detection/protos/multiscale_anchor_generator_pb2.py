@@ -18,6 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='object_detection/protos/multiscale_anchor_generator.proto',
   package='object_detection.protos',
+  syntax='proto2',
   serialized_pb=_b('\n9object_detection/protos/multiscale_anchor_generator.proto\x12\x17object_detection.protos\"\xba\x01\n\x19MultiscaleAnchorGenerator\x12\x14\n\tmin_level\x18\x01 \x01(\x05:\x01\x33\x12\x14\n\tmax_level\x18\x02 \x01(\x05:\x01\x37\x12\x17\n\x0c\x61nchor_scale\x18\x03 \x01(\x02:\x01\x34\x12\x15\n\raspect_ratios\x18\x04 \x03(\x02\x12\x1c\n\x11scales_per_octave\x18\x05 \x01(\x05:\x01\x32\x12#\n\x15normalize_coordinates\x18\x06 \x01(\x08:\x04true')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -49,7 +50,7 @@ _MULTISCALEANCHORGENERATOR = _descriptor.Descriptor(
     _descriptor.FieldDescriptor(
       name='anchor_scale', full_name='object_detection.protos.MultiscaleAnchorGenerator.anchor_scale', index=2,
       number=3, type=2, cpp_type=6, label=1,
-      has_default_value=True, default_value=4,
+      has_default_value=True, default_value=float(4),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -82,6 +83,7 @@ _MULTISCALEANCHORGENERATOR = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],

@@ -34,16 +34,25 @@ RUN pip install Cython
 RUN pip install matplotlib
 RUN pip install jupyter
 
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+
 WORKDIR /app
 COPY . .
 
 
-RUN cd label && \
-    pip install --editable .
+RUN cd label
+RUN pip install --editable .
 
 RUN export LC_ALL=C.UTF-8 && \
     export LANG=C.UTF-8
 
+RUN cd TF_od/cocoapi/PythonAPI && make
+RUN cp -r pycocotools ../../models/research
+RUN cd ../../models/research
+RUN protoc object_detection/protos/*.proto --python_out=.
+RUN export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
+
 EXPOSE 7000:7000
 # ENTRYPOINT ["python", "./test.py"]
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+# ENTRYPOINT ["tail", "-f", "/dev/null"]
+CMD [ "bash" ]

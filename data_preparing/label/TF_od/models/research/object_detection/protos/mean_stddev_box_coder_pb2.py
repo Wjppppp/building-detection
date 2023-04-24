@@ -18,6 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='object_detection/protos/mean_stddev_box_coder.proto',
   package='object_detection.protos',
+  syntax='proto2',
   serialized_pb=_b('\n3object_detection/protos/mean_stddev_box_coder.proto\x12\x17object_detection.protos\"*\n\x12MeanStddevBoxCoder\x12\x14\n\x06stddev\x18\x01 \x01(\x02:\x04\x30.01')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -35,7 +36,7 @@ _MEANSTDDEVBOXCODER = _descriptor.Descriptor(
     _descriptor.FieldDescriptor(
       name='stddev', full_name='object_detection.protos.MeanStddevBoxCoder.stddev', index=0,
       number=1, type=2, cpp_type=6, label=1,
-      has_default_value=True, default_value=0.01,
+      has_default_value=True, default_value=float(0.01),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -47,6 +48,7 @@ _MEANSTDDEVBOXCODER = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],

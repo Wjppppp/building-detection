@@ -39,7 +39,7 @@
 
 python3 setup.py install
 
-python3 tf_record_from_coco.py --label_input=./tanzania --train_rd_path=./tanzania/train.record --valid_rd_path=./tanzania/valid.record
+python tf_record_from_coco.py --label_input=./tanzania --train_rd_path=./tanzania/train.record --valid_rd_path=./tanzania/valid.record
 python3 object_detection/builders/model_builder_test.py
 
 tf_slim
