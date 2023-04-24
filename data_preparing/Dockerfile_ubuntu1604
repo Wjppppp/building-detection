@@ -30,6 +30,8 @@ RUN apt-get update && \
     python3.6 get-pip.py && \
     python3.6 -m pip --version
 
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.6 1
+
 WORKDIR /app
 COPY . .
 
@@ -42,5 +44,6 @@ RUN export LC_ALL=C.UTF-8 && \
     export LANG=C.UTF-8
 
 EXPOSE 7000:7000
-# ENTRYPOINT ["python", "./test.py"]
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+
+CMD [ "bash" ]
+

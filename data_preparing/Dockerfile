@@ -39,20 +39,18 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 WORKDIR /app
 COPY . .
 
-
-RUN cd label
-RUN pip install --editable .
+# RUN cd ./label
+RUN pip install --editable ./label
 
 RUN export LC_ALL=C.UTF-8 && \
     export LANG=C.UTF-8
 
-RUN cd TF_od/cocoapi/PythonAPI && make
-RUN cp -r pycocotools ../../models/research
-RUN cd ../../models/research
-RUN protoc object_detection/protos/*.proto --python_out=.
-RUN export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
+RUN cd ./label/TF_od/cocoapi/PythonAPI && make &&\
+    cp -r pycocotools ../../models/research &&\
+    cd ../../models/research &&\
+    protoc object_detection/protos/*.proto --python_out=. &&\
+    export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
 
 EXPOSE 7000:7000
-# ENTRYPOINT ["python", "./test.py"]
-# ENTRYPOINT ["tail", "-f", "/dev/null"]
+
 CMD [ "bash" ]
