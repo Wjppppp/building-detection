@@ -23,3 +23,16 @@ python -m pip install --use-feature=2020-resolver .
 # Test the installation.
 python object_detection/builders/model_builder_tf2_test.py
 ```
+
+
+# From within TensorFlow/models/research/
+protoc object_detection/protos/*.proto --python_out=.
+
+git clone https://github.com/cocodataset/cocoapi.git
+cd cocoapi/PythonAPI
+make
+cp -r pycocotools <PATH_TO_TF>/TensorFlow/models/research/
+
+# From within TensorFlow/models/research/
+cp object_detection/packages/tf2/setup.py .
+python -m pip install .

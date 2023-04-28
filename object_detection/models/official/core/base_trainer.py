@@ -439,7 +439,11 @@ class Trainer(_AsyncTrainer):
           passthrough_logs.keys(),
       )
 
-    return passthrough_logs | logs
+    e = passthrough_logs.copy()
+    e.update(logs)
+    return e
+  
+    # return passthrough_logs | logs # needs python 3.9
 
   def eval_end(self, aggregated_logs=None):
     """Processes evaluation results."""

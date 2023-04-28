@@ -17,7 +17,7 @@ This repository is heavily relied on ohsome2label (https://github.com/GIScience/
     ```shell
     docker run --name ohsome2label ohsome2label:<TAG>
     # bind mount
-    docker run -it --gpus=all --name ohsome2label --mount type=bind,source="$(pwd)"/label,target=/app ohsome2label:<TAG>
+    docker run -it --gpus all --name ohsome2label --mount type=bind,source="$(pwd)"/label,target=/app ohsome2label:<TAG>
     ```
 
 - Start/Stop a container
