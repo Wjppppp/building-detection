@@ -1,7 +1,7 @@
 .ipynb_checkpoints
-annotations
-models
-pre-trained-models
-images
-exported-models
+annotations/
+models/
+pre-trained-models/
+images/
+exported-models/
 .Trash-0

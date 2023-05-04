@@ -1,17 +1,16 @@
 project:
-  name: Mwanza
-  workspace: ./data/Mwanza
-  project_time: 2023-05-03
+  name: kalola
+  workspace: ./tanzania
+  project_time: 2021-3-25
   task: object detection
 
 osm:
   api: ohsome
   url: https://api.ohsome.org/v1/elements/geometry
-  # bboxes: [32.463226318359375, -5.032122934090069, 32.48931884765625, -5.019810836520875]
-  bboxes: [32.948041, -2.556391, 32.983103, -2.526680]
+  bboxes: [32.463226318359375, -5.032122934090069, 32.48931884765625, -5.019810836520875]
   tags:
     - {'label': 'building', 'key': 'building', 'value': ''}
-  timestamp: 2022-05-01
+  timestamp: 2020-10-20
   types: polygon
 
 image:

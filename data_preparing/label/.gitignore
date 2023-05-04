@@ -19,3 +19,5 @@ build
 tmp_code
 !example_result/*/*
 tanzania
+data
+hello_bash.sh

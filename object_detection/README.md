@@ -1,6 +1,6 @@
 ## Installation
 
-```shell
+<!-- ```shell
 git clone https://github.com/tensorflow/models.git
 ```
 
@@ -9,6 +9,7 @@ git clone https://github.com/tensorflow/models.git
 docker build -f research/object_detection/dockerfiles/tf2/Dockerfile -t od .
 docker run -it od
 ```
+If building failed, please refer to https://github.com/tensorflow/models/issues/10951
 
 ```shell
 cd models/research
@@ -28,19 +29,13 @@ python object_detection/builders/model_builder_tf2_test.py
 # From within TensorFlow/models/research/
 
 protoc object_detection/protos/*.proto --python_out=.
-
 git clone https://github.com/cocodataset/cocoapi.git
-
 cd cocoapi/PythonAPI && make
-
 cp -r pycocotools <PATH_TO_TF>/TensorFlow/models/research/
-
 # From within TensorFlow/models/research/
-
 cp object_detection/packages/tf2/setup.py .
-
 python -m pip install .
-```
+``` -->
 
 ## Docker
 
@@ -50,12 +45,11 @@ python -m pip install .
 docker build -t tf_od:<TAG> .
 # This may take more than 1.5 hour
 ```
-If building failed, please refer to https://github.com/tensorflow/models/issues/10951
 
 #### Run
 
 ```shell
-docker run -it --gpus all --name tf2_od -p 8888:8888 --mount type=bind,source="$(pwd)",target=/app tf_od:<TAG>
+docker run -it --gpus all --name tf2_od -p 8888:8888 -p 6006:6006 --mount type=bind,source="$(pwd)",target=/app tf_od:<TAG>
 ```
 
 

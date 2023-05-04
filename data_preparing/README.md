@@ -17,7 +17,7 @@ This repository is heavily relied on ohsome2label (https://github.com/GIScience/
     ```shell
     docker run --name ohsome2label ohsome2label:<TAG>
     # bind mount
-    docker run -it --gpus all --name ohsome2label --mount type=bind,source="$(pwd)"/label,target=/app ohsome2label:<TAG>
+    docker run -it --gpus all --name ohsome2label --mount type=bind,source="$(pwd)",target=/app ohsome2label:<TAG>
     ```
 
 - Start/Stop a container
@@ -166,7 +166,7 @@ python object_detection/builders/model_builder_test.py
 #### Convert to training records
 
 ```shell
-python tf_record_from_coco.py --label_input=./tanzania --train_rd_path=./tanzania/train.record --valid_rd_path=./tanzania/valid.record
+python tf_record_from_coco.py --label_input=./data/Mwanza --train_rd_path=./data/Mwanza/train.record --valid_rd_path=./data/Mwanza/valid.record
 ```
 
 Eventually, you can find the training record and validation record under your workspace folder.
