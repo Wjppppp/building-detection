@@ -1,6 +1,6 @@
 project:
-  name: Mwanza
-  workspace: ./data/Mwanza
+  name: Ottobrunn
+  workspace: ./data/Ottobrunn
   project_time: 2023-05-03
   task: object detection
 
@@ -8,10 +8,10 @@ osm:
   api: ohsome
   url: https://api.ohsome.org/v1/elements/geometry
   # bboxes: [32.463226318359375, -5.032122934090069, 32.48931884765625, -5.019810836520875]
-  bboxes: [32.948041, -2.556391, 32.983103, -2.526680]
+  bboxes: [11.656322,48.055595,11.677952,48.069247]
   tags:
     - {'label': 'building', 'key': 'building', 'value': ''}
-  timestamp: 2022-05-01
+  timestamp: 2022-12-31
   types: polygon
 
 image:
