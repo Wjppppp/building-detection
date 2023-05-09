@@ -1,3 +1,7 @@
+# Description: Prepare tensorflow traning samples .record with ohsome2label.
+# Author: Jiapan Wang
+# Created Date: 05.05.2023
+
 #! /bin/bash
 
 ohsome2label vector
