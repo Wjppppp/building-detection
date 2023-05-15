@@ -5,3 +5,7 @@ pre-trained-models/
 images/
 exported-models/
 .Trash-0
+convert_geojson.py
+tf_record_from_coco_preview.py
+tf_od_predict.py
+tf_od_predict_geojson.py

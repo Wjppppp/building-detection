@@ -13,13 +13,13 @@ mkdir -p $NAME/models
 mkdir -p $NAME/exported-models
 
 # create label map
-LABEL_MAP=$NAME/annotations/label_map.pptxt
+LABEL_MAP=$NAME/annotations/label_map.pbtxt
 
 if [ -f "$LABEL_MAP" ]; then
     echo "$LABEL_MAP exists."
 else     
-    touch $NAME/annotations/label_map.pptxt
-    echo -e "item {\n\tid: 1\n\tname: 'building'\n}" >> $NAME/annotations/label_map.pptxt
+    touch $NAME/annotations/label_map.pbtxt
+    echo -e "item {\n\tid: 1\n\tname: 'building'\n}" >> $NAME/annotations/label_map.pbtxt
     echo "$LABEL_MAP created."
 fi
 
@@ -69,7 +69,7 @@ echo "Do you want to evaluate the trained model?"
 select yn in "Yes" "No"; do
     case $yn in
         Yes ) python model_main_tf2.py --model_dir=models/my_ssd_resnet101_v1_fpn --pipeline_config_path=models/my_ssd_resnet101_v1_fpn/pipeline.config --checkpoint_dir=models/my_ssd_resnet101_v1_fpn; break;;
-        No ) exit;;
+        No ) break;;
     esac
 done
 

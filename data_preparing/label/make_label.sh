@@ -4,16 +4,25 @@
 
 #! /bin/bash
 
-ohsome2label vector
+for filename in $(ls config/)
+do
+  echo $filename
+done;
 
-ohsome2label label
+read -p "Enter the config file you want to use: " CONFIGNAME
 
-ohsome2label image
+echo $CONFIGNAME
 
-ohsome2label visualize -t overlay
+ohsome2label --config config/$CONFIGNAME vector
+
+ohsome2label --config config/$CONFIGNAME label
+
+ohsome2label --config config/$CONFIGNAME image
+
+ohsome2label --config config/$CONFIGNAME visualize -t overlay
 
 # get the project name from config
-name=$(yq -r '.project.name' config/config.yaml)
+name=$(yq -r '.project.name' config/$CONFIGNAME)
 echo $name
 
 # install object detection api
