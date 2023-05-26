@@ -21,7 +21,7 @@ building-detection/
     │   └── training_demo/
     │       ├── annotations/
     │       ├── exported-models/
-    │       │   ├── label_mao.pbtxt
+    │       │   ├── label_map.pbtxt
     │       │   ├── train.record
     │       │   └── valid.record          
     │       ├── images/

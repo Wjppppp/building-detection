@@ -15,6 +15,18 @@ cd workspace
 ./train.sh
 ```
 
+When facing the configuration of pipeline, please refer to the **pipeline_template.config** or https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html#configure-the-training-pipeline.
+
+#### Walkthrough
+
+If you want to train the model step by step, please copy **walkthrough.ipynb** under your working folder, and follow it step by step. 
+
+*Run Jupyter notebook inside Docker container*
+
+```shell
+jupyter notebook --ip=0.0.0.0 --no-browser --allow-root --debug
+```
+
 #### Detach from docker container
 
 Ctrl+P followed by Ctrl+Q

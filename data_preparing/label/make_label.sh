@@ -13,11 +13,21 @@ read -p "Enter the config file you want to use: " CONFIGNAME
 
 echo $CONFIGNAME
 
-ohsome2label --config config/$CONFIGNAME vector
+# ohsome2label --config config/$CONFIGNAME vector
 
-ohsome2label --config config/$CONFIGNAME label
+# # start training
+# echo "Do you have correct vector data now?"
+# select yn in "Yes" "No"; do
+#     case $yn in
+#         Yes ) break;;
+#         No ) exit;;
+#     esac
+# done
 
-ohsome2label --config config/$CONFIGNAME image
+
+# ohsome2label --config config/$CONFIGNAME label
+
+# ohsome2label --config config/$CONFIGNAME image
 
 ohsome2label --config config/$CONFIGNAME visualize -t overlay
 
@@ -31,4 +41,12 @@ export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
 cd ../../../
 
 # convert to .record
+# start training
+echo "Do you want to make tf records now?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) break;;
+        No ) exit;;
+    esac
+done
 python tf_record_from_coco.py --label_input=./data/$name --train_rd_path=./data/$name/train.record --valid_rd_path=./data/$name/valid.record

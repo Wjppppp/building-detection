@@ -1,0 +1,20 @@
+project:
+  name: taninga
+  workspace: ./data/taninga
+  project_time: 2023-05-15
+  task: object detection
+
+osm:
+  api: ohsome
+  url: https://api.ohsome.org/v1/elements/geometry
+  bboxes: [32.8275672774842349,-25.1957497995525976, 32.8460425880347771,-25.1822506705434499]
+  tags:
+    - {'label': 'building', 'key': 'building', 'value': ''}
+  timestamp: 2022-12-31
+  types: polygon
+
+image:
+  img_api: bing
+  img_url: http://ak.t0.tiles.virtualearth.net/tiles/a{q}.jpeg?n=z&g=5880&mkt=en-US&token={token}
+  api_token : 'AhUiTb_1C9bJJJBbIuwuHOZctXHnvyeVmM5jGtErwZ5U9IYe96rJEGZ-QwIY_J9V'
+  zoom: 18

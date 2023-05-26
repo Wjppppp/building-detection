@@ -1,0 +1,23 @@
+project:
+  name: tanzania
+  workspace: ./data/tanzania_train
+  project_time: 2023-05-19
+  task: object detection
+
+osm:
+  api: ohsome
+  url: https://api.ohsome.org/v1/elements/geometry
+  bboxes: [32.6417542000000012,-4.9568786999999999, 32.8230286000000007,-4.8528907999999999]
+  tags:
+    - {'label': 'building', 'key': 'building', 'value': ''}
+  timestamp: 2022-12-31
+  types: polygon
+
+image:
+  img_api: bing
+  img_url: http://t0.tiles.virtualearth.net/tiles/a{q}.png?g=854&mkt=en-US&token={token}
+  api_token : 'AhUiTb_1C9bJJJBbIuwuHOZctXHnvyeVmM5jGtErwZ5U9IYe96rJEGZ-QwIY_J9V'
+  zoom: 18
+
+
+

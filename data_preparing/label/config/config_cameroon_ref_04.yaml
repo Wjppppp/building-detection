@@ -1,0 +1,20 @@
+project:
+  name: cameroon_ref_04
+  workspace: ./data/cameroon_ref_04
+  project_time: 2022-12-31
+  task: object detection
+
+osm:
+  api: ohsome
+  url: https://api.ohsome.org/v1/elements/geometry
+  bboxes: [10.1758264495190556,5.6589049871613826,10.1808537742712719,5.6624908025580210]
+  tags:
+    - {'label': 'building', 'key': 'building', 'value': ''}
+  timestamp: 2022-12-31
+  types: polygon
+
+image:
+  img_api: bing
+  img_url: http://ak.t0.tiles.virtualearth.net/tiles/a{q}.jpeg?n=z&g=5880&mkt=en-US&token={token}
+  api_token : 'AhUiTb_1C9bJJJBbIuwuHOZctXHnvyeVmM5jGtErwZ5U9IYe96rJEGZ-QwIY_J9V'
+  zoom: 18

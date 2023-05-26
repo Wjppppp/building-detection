@@ -165,7 +165,7 @@ def main(_):
     #clean_image(imgs_dir, preview_dir,
     #            annotations_filepath)  # optional funtion of delecting bad samples in the preview folder
     total_imgs = len(coco_data)
-    split_index = int(total_imgs * 0.8)
+    split_index = int(total_imgs * 1)
     coco_data_train = coco_data[:split_index]
     coco_data_validation = coco_data[split_index:]
     train_dir = os.path.join(FLAGS.label_input, 'train')

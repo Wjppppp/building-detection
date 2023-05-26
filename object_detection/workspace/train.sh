@@ -55,7 +55,7 @@ cp ../exporter_main_v2.py exporter_main_v2.py
 ls
 
 # start training
-echo "Do you want to start traning?"
+echo "Do you want to start training?"
 select yn in "Yes" "No"; do
     case $yn in
         Yes ) python model_main_tf2.py --model_dir=models/my_ssd_resnet101_v1_fpn --pipeline_config_path=models/my_ssd_resnet101_v1_fpn/pipeline.config; break;;
@@ -64,7 +64,6 @@ select yn in "Yes" "No"; do
 done
 
 # evaluating the model
-# start training
 echo "Do you want to evaluate the trained model?"
 select yn in "Yes" "No"; do
     case $yn in
@@ -75,5 +74,12 @@ done
 
 
 # Export the trained model
-python exporter_main_v2.py --input_type image_tensor --pipeline_config_path models/my_ssd_resnet101_v1_fpn/pipeline.config --trained_checkpoint_dir models/my_ssd_resnet101_v1_fpn/ --output_directory exported-models/my_model
+echo "Do you want to export the trained model?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) python exporter_main_v2.py --input_type image_tensor --pipeline_config_path models/my_ssd_resnet101_v1_fpn/pipeline.config --trained_checkpoint_dir models/my_ssd_resnet101_v1_fpn/ --output_directory exported-models/my_model; break;;
+        No ) exit;;
+    esac
+done
+
 
