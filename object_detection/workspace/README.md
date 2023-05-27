@@ -15,7 +15,7 @@ cd workspace
 ./train.sh
 ```
 
-When facing the configuration of pipeline, please refer to the **pipeline_template.config** or https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html#configure-the-training-pipeline.
+When facing the configuration of pipeline, please copy **pipeline_template.config** or https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html#configure-the-training-pipeline.
 
 #### Walkthrough
 

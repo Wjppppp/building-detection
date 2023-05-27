@@ -18,6 +18,7 @@ RUN python -m pip install --upgrade pip
 
 RUN pip install cmake
 RUN pip install notebook
+RUN pip install geojson
 
 WORKDIR /app
 COPY . .
