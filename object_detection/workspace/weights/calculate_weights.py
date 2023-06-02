@@ -5,7 +5,7 @@
 # Description: Calculate the weight of distance and image correlation between the reference area and the target area.
 # =======================================================================================================================================================
 
-from math import sin, cos, acos, atan2, radians, pi
+from math import sin, cos, acos, atan2, radians, pi, atan, exp
 from sklearn.preprocessing import normalize
 import numpy as np
 import cv2
@@ -13,6 +13,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Suppress TensorFlow logging (1)
 import pathlib
 import random
+import json
 
 IMAGE_DIR = './sample_images/'
 
@@ -43,7 +44,11 @@ def calculate_distance(lon1, lat1, lon2, lat2):
 
     return distance
 
-def distance_weights():
+def distance_weights(c_lon_target, c_lat_target):
+    """
+    center_box: bbox [left, top, right, bottom] of the target area.
+    """
+
     c_lat = np.zeros(8)
     c_lon = np.zeros(8)
     distance = np.zeros(8)
@@ -59,7 +64,7 @@ def distance_weights():
         [10.2613935439247506,5.6314816109111181,10.2656648067598848,5.6353477536127228]
     ] 
 
-    c_lon_target, c_lat_target = get_center_latlon(10.1926316905051912,5.6555060217455528,10.2352523789601566,5.6722064157053831)
+    
 
     for i in range(0, 8):
         # print("bbox", bbox_list[i][0], bbox_list[i][1], bbox_list[i][2], bbox_list[i][3])
@@ -72,8 +77,8 @@ def distance_weights():
     # print("inverse distance", 1.0/distance)
 
     # distance weights
-    print("Distance weights:")
-    weights = normalize_weights(distance)
+    # print("Distance weights:")
+    # weights = normalize_weights(distance)
 
     # inverse distance weights
     print("Inverse distance weights:")
@@ -171,6 +176,41 @@ def image_similarity_weights():
 
     return average_similarity, similarity_weights
 
+def tile_to_ref_average_similarity_weights(tile_id):
+
+    ref_dirs = os.listdir(IMAGE_DIR)
+    
+    target_dir = ref_dirs.pop()
+    # print(ref_dirs)
+
+    target_image_path = IMAGE_DIR + target_dir + "/" + tile_id + ".png"
+    tile_image = cv2.imread(target_image_path)
+
+    # print("target tile image: ", tile_image)
+    average_similarity = []
+
+    for ref_dir in ref_dirs:
+
+        ref_image_path = IMAGE_DIR + ref_dir + "/"
+        ref_image_paths = load_images(ref_image_path)
+        print(ref_image_paths)
+
+        similarity = 0
+
+        for image_path in ref_image_paths:
+            
+            ref_image = cv2.imread(image_path)
+            similarity += calculate_image_similarity(tile_image, ref_image, 3)
+            # print("sum similarity: ", similarity)
+
+        average_similarity.append(similarity/len(ref_image_paths))
+
+        print("Average Similarity between {} and {} is {} \n".format(ref_dir, target_image_path, average_similarity)) 
+
+    norm_average_similarity = normalize_weights(np.array(average_similarity))
+
+    return norm_average_similarity
+
 def normalize_weights(weight):
 
     norm_weights = normalize(weight[:,np.newaxis], axis=0, norm='l1').ravel()
@@ -178,16 +218,93 @@ def normalize_weights(weight):
 
     return norm_weights
 
+def pixel_coords_zoom_to_lat_lon(PixelX, PixelY, zoom):
+    MapSize = 256 * pow(2, zoom)
+    x = (PixelX / MapSize) - 0.5
+    y = 0.5 - (PixelY / MapSize)
+    lon = 360 * x
+    lat = 90 - 360 * atan(exp(-y * 2 * pi)) / pi
+
+    return lon, lat
+
+def parse_tile_name(name):
+    zoom, TileX, TileY = [int(x) for x in name.split(".")]
+    return TileX, TileY, zoom
+
+def tile_to_ref_distance_weights(tile_id):
+    
+    tileX, tileY, zoom = parse_tile_name(tile_id)
+
+    print("tile id: ", tile_id)
+    print(tileX, tileY, zoom)
+
+    c_pixelX = tileX * 256 + 127
+    c_pixelY = tileY * 256 + 127
+
+    c_lon, c_lat = pixel_coords_zoom_to_lat_lon(c_pixelX, c_pixelY, zoom)
+
+    print(c_lon, c_lat)
+
+    # distance weights
+    distance, distance_weight = distance_weights(c_lon, c_lat)
+
+    return distance_weight
+
+def tile_to_ref_weights():
+
+    target_tile_image_dir = IMAGE_DIR + "target/"
+    tile_dir = os.listdir(target_tile_image_dir)
+    print("tile paths: ", tile_dir)
+
+    weights_dict_list = []
+
+    for tile_name in tile_dir:
+
+        # image id
+        tile_id = os.path.splitext(os.path.basename(tile_name))[0]
+        
+        # distance weights
+        distance_weights = tile_to_ref_distance_weights(tile_id)
+
+        # image similarity weights
+        similarity_weights = tile_to_ref_average_similarity_weights(tile_id)
+
+        # weight dictionary for each tile
+        new_weight = {
+            "tile_id": tile_id,
+            "inverse_distance_weights": distance_weights.tolist(), 
+            "image_similarity_weights": similarity_weights.tolist(),
+        }
+        weights_dict_list.append(new_weight)
+
+
+
+        print("\n",tile_name, new_weight)
+        
+        # break
+    
+    print("weight dict list: ", weights_dict_list)
+    return weights_dict_list
+
 
 
 if __name__ == '__main__':
 
-    print("image similarity weights:")
-    similarity, similarity_weight = image_similarity_weights()
+    # print("image similarity weights:")
+    
+    # similarity, similarity_weight = image_similarity_weights()
 
-    print("distance weights:")
-    distance, distance_weight = distance_weights()
+    # print("distance weights:")
+    # c_box = [10.1926316905051912,5.6555060217455528,10.2352523789601566,5.6722064157053831]
+    # c_lon_target, c_lat_target = get_center_latlon(c_box)
+    # distance, distance_weight = distance_weights(c_lon_target, c_lat_target)
 
+    weight_dict_list = tile_to_ref_weights()
+    # Writing to json file
+    with open("distance_and_similarity_weights.json","w", encoding='utf-8') as file:
+        json.dump(weight_dict_list, file)
+    
+    print("done")
     # # Writing to file
     # with open("weights.txt", "a") as file:
     #     # Writing data to a file

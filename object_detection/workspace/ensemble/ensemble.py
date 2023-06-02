@@ -1,0 +1,127 @@
+# =======================================================================================================================================================
+# ensemble.py
+# Author: Jiapan Wang
+# Created Date: 02/06/2023
+# Description: Ensemble predications generated from different object detection models.
+# =======================================================================================================================================================
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    
+import pathlib
+import numpy as np
+import json
+import math
+import geojson
+from ensemble_boxes import *
+from prediction_to_geojson import *
+# from inference_main import detection_to_dictionary
+
+PREDICTION_DIR = './predictions/'
+IMAGE_SIZE = 256
+# WEIGHTS = [1, 1, 1, 1, 1, 1, 1, 1]
+# distance weights
+# WEIGHTS = [0.11287657049813336, 0.14695563801296516, 0.135859966650167, 0.10951583867005636, 0.13169247923069352, 0.104564380555035, 0.1913516672528719, 0.06718345913007756]
+# similarity weights
+WEIGHTS = [0.1296690730621791, 0.14463064898920144, 0.13733780025240716, 0.12988517566092336, 0.13519465133891334, 0.10757754249364723, 0.11777558215540392, 0.0979295260473244]
+
+def normalize_box(box):
+
+    (x1, y1, x2, y2) = box[0]/IMAGE_SIZE, box[1]/IMAGE_SIZE, box[2]/IMAGE_SIZE, box[3]/IMAGE_SIZE
+    norm_box = [x1, y1, x2, y2]
+
+    return norm_box
+
+def ensemble():
+    pred_dir = os.listdir(PREDICTION_DIR)
+    ensemble_dir = pred_dir.pop(0) # ensemble target directory
+
+    print("ensemble dir: ", ensemble_dir)
+    print("prediction dir: ", pred_dir)
+
+    json_path = PREDICTION_DIR + pred_dir[0] + "/json"
+    json_list = os.listdir(json_path) # geojson filename list
+
+    # print("json dir: ", json_list)
+    
+    # ensemble for each tile
+    for json_filename in json_list:
+
+        # bbox, score, label combined from multiple models
+        boxes_list = []
+        score_list = []
+        label_list = []      
+
+        task_id = json_filename
+
+        for pred_model in pred_dir:
+
+            # bbox, score, label from single model
+            bbox = []
+            score = []
+            label = []
+
+            # predictions/model/json/task_id.geojson
+            input_path = PREDICTION_DIR + pred_model + "/json/" + task_id
+            print("\npredictions from path: ", input_path)
+
+            with open(input_path, 'r') as input_file:
+                geojson_dict = geojson.load(input_file)
+                print("geojson: ", geojson_dict['features'])
+            geojson_dict['features']
+
+            for feature in geojson_dict['features']:
+                label.append(feature['properties']['prediction_class'])
+                score.append(feature['properties']['score'])
+                bbox.append(normalize_box(feature['properties']['bbox']))
+
+            # print("bbox: \n", bbox)
+            # print("score: \n", score)
+            # print("label: \n", label)
+
+            boxes_list.append(bbox)
+            score_list.append(score)
+            label_list.append(label)
+
+            # break
+        print("bbox list: \n", boxes_list)
+        print("score list: \n", score_list)
+        print("label list: \n", label_list)
+
+        iou_thr = 0.5
+        skip_box_thr = 0.2
+        conf_type = "box_and_model_avg"
+        # sigma = 0.1
+
+        boxes, scores, labels = weighted_boxes_fusion(boxes_list, score_list, label_list, weights=WEIGHTS, iou_thr=iou_thr, skip_box_thr=skip_box_thr, conf_type=conf_type)
+        boxes = (np.array(boxes)*256).astype(np.int)  
+
+        print("ensemble bbox list: \n", boxes)
+        print("ensemble score list: \n", scores)
+        print("ensemble label list: \n", labels)
+        print("task_id", task_id)
+
+        task_id = os.path.splitext(os.path.basename(task_id))[0]
+        print("task_id", task_id)
+
+        output_path = PREDICTION_DIR + "prediction-ensemble/json/"
+        detection_to_geojson(task_id, boxes, labels, scores, output_path)
+
+
+
+    input_dir = PREDICTION_DIR + "prediction-ensemble/json/"
+    geojson_all = merge_all_geojson_to_one(input_dir)
+
+    output_path = PREDICTION_DIR + "prediction-ensemble/merged_prediction.geojson"
+    with open(output_path, 'w', encoding='utf-8') as output_file:
+        geojson.dump(geojson_all, output_file)
+
+    print("done")
+
+    return
+
+if __name__ == "__main__":
+
+    print("hello, ensemble")
+    ensemble()
+
+    
