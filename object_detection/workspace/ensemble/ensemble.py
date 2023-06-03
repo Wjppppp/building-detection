@@ -7,6 +7,7 @@
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    
+import warnings
 import pathlib
 import numpy as np
 import json
@@ -31,7 +32,16 @@ def normalize_box(box):
 
     return norm_box
 
-def ensemble():
+def load_weights():
+
+    with open("distance_and_similarity_weights.json","r") as file:
+        weights_dict_list = json.load(file)
+    
+    # print(type(weights_dict_list))
+
+    return weights_dict_list
+
+def ensemble(weights_type = "average"):
     pred_dir = os.listdir(PREDICTION_DIR)
     ensemble_dir = pred_dir.pop(0) # ensemble target directory
 
@@ -42,16 +52,19 @@ def ensemble():
     json_list = os.listdir(json_path) # geojson filename list
 
     # print("json dir: ", json_list)
+
+    weights_dict_list = load_weights()
+    print(weights_dict_list[0])
     
     # ensemble for each tile
-    for json_filename in json_list:
+    for i, json_filename in enumerate(json_list):
 
         # bbox, score, label combined from multiple models
         boxes_list = []
         score_list = []
         label_list = []      
 
-        task_id = json_filename
+        task_id = os.path.splitext(os.path.basename(json_filename))[0]
 
         for pred_model in pred_dir:
 
@@ -61,12 +74,12 @@ def ensemble():
             label = []
 
             # predictions/model/json/task_id.geojson
-            input_path = PREDICTION_DIR + pred_model + "/json/" + task_id
-            print("\npredictions from path: ", input_path)
+            input_path = PREDICTION_DIR + pred_model + "/json/" + json_filename 
+            # print("\npredictions from path: ", input_path)
 
             with open(input_path, 'r') as input_file:
                 geojson_dict = geojson.load(input_file)
-                print("geojson: ", geojson_dict['features'])
+                # print("geojson: ", geojson_dict['features'])
             geojson_dict['features']
 
             for feature in geojson_dict['features']:
@@ -92,7 +105,27 @@ def ensemble():
         conf_type = "box_and_model_avg"
         # sigma = 0.1
 
-        boxes, scores, labels = weighted_boxes_fusion(boxes_list, score_list, label_list, weights=WEIGHTS, iou_thr=iou_thr, skip_box_thr=skip_box_thr, conf_type=conf_type)
+
+        ################################################################################### weights choice
+        weight_dict = weights_dict_list[i]
+
+        if weights_type == "average":
+            weights = [1,1,1,1,1,1,1,1]
+        elif weights_type == "distance":
+            weights = weight_dict["inverse_distance_weights"]
+        elif weights_type == "similarity":
+            weights = weight_dict["image_similarity_weights"]
+        else:
+            warnings.warn('Please select an appropriate weight type: "average" or "distance" or "similarity"')
+            exit()
+        
+        if weight_dict["tile_id"] == task_id:
+            print("weight_dict", weight_dict)
+            print("weight list", weights)
+        else:
+            print("Didn't find weights!!!", task_id)
+
+        boxes, scores, labels = weighted_boxes_fusion(boxes_list, score_list, label_list, weights=weights, iou_thr=iou_thr, skip_box_thr=skip_box_thr, conf_type=conf_type)
         boxes = (np.array(boxes)*256).astype(np.int)  
 
         print("ensemble bbox list: \n", boxes)
@@ -100,12 +133,13 @@ def ensemble():
         print("ensemble label list: \n", labels)
         print("task_id", task_id)
 
-        task_id = os.path.splitext(os.path.basename(task_id))[0]
+        # task_id = os.path.splitext(os.path.basename(task_id))[0]
         print("task_id", task_id)
 
         output_path = PREDICTION_DIR + "prediction-ensemble/json/"
         detection_to_geojson(task_id, boxes, labels, scores, output_path)
 
+        # break
 
 
     input_dir = PREDICTION_DIR + "prediction-ensemble/json/"
@@ -122,6 +156,6 @@ def ensemble():
 if __name__ == "__main__":
 
     print("hello, ensemble")
-    ensemble()
+    ensemble("similarity")
 
     
