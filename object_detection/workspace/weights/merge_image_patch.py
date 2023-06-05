@@ -15,12 +15,6 @@ import pathlib
 import numpy as np
 from PIL import Image
 
-IMAGE_DIR = './images_03_target_area_without_buildings/'
-IMAGE_PATCH_SIZE = 256
-IMAGE_PATCH_NUMBER_ROW = 3
-IMAGE_PATCH_NUMBER_COL = 3
-CHANNEL = 3
-
 # Load images
 def load_images(path):
     
@@ -40,9 +34,9 @@ def load_images(path):
         image_paths.append(str(image_path))
     return image_paths
 
-def parse_tile_name(name):
-    index, zoom, TileX, TileY = [int(x) for x in name.split(".")]
-    return index, TileX, TileY, zoom
+# def parse_tile_name(name):
+#     index, zoom, TileX, TileY = [int(x) for x in name.split(".")]
+#     return index, TileX, TileY, zoom
 
 def load_image_into_numpy_array(path):
     """Load an image from file into a numpy array.
@@ -59,22 +53,18 @@ def load_image_into_numpy_array(path):
     """
     return np.array(Image.open(path))
 
+def merge_images(image_dir):
 
-
-if __name__ == '__main__':
-
-    image_paths = load_images(IMAGE_DIR)
-
+    image_paths = load_images(image_dir)
     image_list = []
-    
     for image_path in image_paths:
 
         patch_id = os.path.splitext(os.path.basename(image_path))[0]
-        index, TileX, TileY, zoom = parse_tile_name(patch_id)
+        # index, TileX, TileY, zoom = parse_tile_name(patch_id)
 
         image_np = load_image_into_numpy_array(image_path)
         image_list.append(image_np)
-        print('{} Image patch {} loaded... \n'.format(index, image_path), end='')
+        # print('{} Image patch {} loaded... \n'.format(index, image_path), end='')
         # print(np.shape(image_np), image_np)
 
     # print("image_list",np.shape(image_list), image_list)
@@ -84,6 +74,20 @@ if __name__ == '__main__':
     image_row3 = np.concatenate((image_list[6], image_list[7], image_list[8]), axis=1)
     merged_image = np.concatenate((image_row1, image_row2, image_row3), axis=0)
 
+    return merged_image
+
+
+if __name__ == '__main__':
+
+    IMAGE_DIR = './ViT_sample_images/'
+    IMAGE_PATCH_SIZE = 256
+    IMAGE_PATCH_NUMBER_ROW = 3
+    IMAGE_PATCH_NUMBER_COL = 3
+    CHANNEL = 3
+
+    
+    merged_image =  merge_images(IMAGE_DIR)  
+    
     im = Image.fromarray(merged_image, 'RGB')
     im.save("merged.png")
     print("merging...done!")

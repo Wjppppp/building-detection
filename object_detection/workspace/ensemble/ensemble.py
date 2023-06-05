@@ -34,7 +34,7 @@ def normalize_box(box):
 
 def load_weights():
 
-    with open("distance_and_similarity_weights.json","r") as file:
+    with open("all_weights.json","r") as file:
         weights_dict_list = json.load(file)
     
     # print(type(weights_dict_list))
@@ -115,6 +115,8 @@ def ensemble(weights_type = "average"):
             weights = weight_dict["inverse_distance_weights"]
         elif weights_type == "similarity":
             weights = weight_dict["image_similarity_weights"]
+        elif weights_type == "attention":
+            weights = weight_dict["attention_map_weights"]
         else:
             warnings.warn('Please select an appropriate weight type: "average" or "distance" or "similarity"')
             exit()
@@ -156,6 +158,6 @@ def ensemble(weights_type = "average"):
 if __name__ == "__main__":
 
     print("hello, ensemble")
-    ensemble("similarity")
+    ensemble("attention")
 
     

@@ -8,6 +8,7 @@
 from math import sin, cos, acos, atan2, radians, pi, atan, exp
 from sklearn.preprocessing import normalize
 import numpy as np
+from PIL import Image
 import cv2
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Suppress TensorFlow logging (1)
@@ -250,58 +251,102 @@ def tile_to_ref_distance_weights(tile_id):
 
     return distance_weight
 
+from merge_image_patch import merge_images
+from vit_representations import get_image_attention_weights, load_model, MODELS_ZIP
+
+def tile_to_ref_attention_weights(tile_id, vit_model):
+
+    target_dir = os.listdir(IMAGE_DIR).pop()
+    target_image_path = IMAGE_DIR + target_dir + "/" + tile_id + ".png"
+    tile_image = cv2.imread(target_image_path)
+
+    # replace center image patch
+    tile_image_new_file = './ViT_sample_images/' + "5.png"
+    cv2.imwrite(tile_image_new_file, tile_image)
+
+    vit_sample_image_dir = './ViT_sample_images/'
+
+    attention_maps_dir = './attention_maps/attention_map'
+    if not os.path.exists(attention_maps_dir):
+        os.makedirs(attention_maps_dir)
+
+    merged_image_dir = './attention_maps/merged_image'
+    if not os.path.exists(merged_image_dir):
+        os.makedirs(merged_image_dir)
+
+    # merge 9 image patches to one
+    merged_image = merge_images(vit_sample_image_dir)
+    im = Image.fromarray(merged_image, 'RGB')
+    im.save(f"{merged_image_dir}/{tile_id}_merged.png")
+    print(f"merging {tile_id}...done!")
+
+    # generate attention map and weights
+    img_path = merged_image_dir + "/" + tile_id + "_merged.png"
+    # image_id = os.path.splitext(os.path.basename(img_path))[0]
+    model_type = "dino"
+
+    attention_weights = get_image_attention_weights(tile_id, img_path, vit_model, attention_maps_dir, model_type)
+    # delete weight of center patch
+    attention_weights.pop(4)
+    norm_attention_weights = normalize_weights(np.array(attention_weights))
+
+    return norm_attention_weights
+
 def tile_to_ref_weights():
 
     target_tile_image_dir = IMAGE_DIR + "target/"
     tile_dir = os.listdir(target_tile_image_dir)
-    print("tile paths: ", tile_dir)
+    # print("tile paths: ", tile_dir)
 
     weights_dict_list = []
+
+    # Load the model. 
+    vit_model = load_model(MODELS_ZIP["vit_dino_base16"])
+    print("Model loaded.")
 
     for tile_name in tile_dir:
 
         # image id
         tile_id = os.path.splitext(os.path.basename(tile_name))[0]
         
-        # distance weights
+        # # distance weights
         distance_weights = tile_to_ref_distance_weights(tile_id)
 
-        # image similarity weights
+        # # image similarity weights
         similarity_weights = tile_to_ref_average_similarity_weights(tile_id)
+
+        # ViT-DINO attention weights
+        attention_weights = tile_to_ref_attention_weights(tile_id, vit_model)
 
         # weight dictionary for each tile
         new_weight = {
             "tile_id": tile_id,
             "inverse_distance_weights": distance_weights.tolist(), 
             "image_similarity_weights": similarity_weights.tolist(),
+            "attention_map_weights": attention_weights.tolist(),
         }
         weights_dict_list.append(new_weight)
-
-
 
         print("\n",tile_name, new_weight)
         
         # break
     
-    print("weight dict list: ", weights_dict_list)
+    # print("weight dict list: ", weights_dict_list)
     return weights_dict_list
 
 
 
 if __name__ == '__main__':
 
-    # print("image similarity weights:")
-    
-    # similarity, similarity_weight = image_similarity_weights()
 
     # print("distance weights:")
     # c_box = [10.1926316905051912,5.6555060217455528,10.2352523789601566,5.6722064157053831]
     # c_lon_target, c_lat_target = get_center_latlon(c_box)
     # distance, distance_weight = distance_weights(c_lon_target, c_lat_target)
-
+    
     weight_dict_list = tile_to_ref_weights()
     # Writing to json file
-    with open("distance_and_similarity_weights.json","w", encoding='utf-8') as file:
+    with open("all_weights.json","w", encoding='utf-8') as file:
         json.dump(weight_dict_list, file)
     
     print("done")
