@@ -36,8 +36,9 @@ def load_weights():
 
     return weights_dict_list
 
-def ensemble(weights_type = "average"):
+def ensemble(weights_type):
     pred_dir = os.listdir(PREDICTION_DIR)
+    pred_dir.pop(0)
     ensemble_dir = pred_dir.pop(0) # ensemble target directory
 
     print("ensemble dir: ", ensemble_dir)
@@ -96,7 +97,7 @@ def ensemble(weights_type = "average"):
         print("label list: \n", label_list)
 
         iou_thr = 0.5
-        skip_box_thr = 0.2
+        skip_box_thr = 0.0001
         conf_type = "box_and_model_avg"
         # sigma = 0.1
 
@@ -105,7 +106,7 @@ def ensemble(weights_type = "average"):
         weight_dict = weights_dict_list[i]
 
         if weights_type == "average":
-            weights = [1,1,1,1,1,1,1,1]
+            weights = [1/8,1/8,1/8,1/8,1/8,1/8,1/8,1/8]
         elif weights_type == "distance":
             weights = weight_dict["inverse_distance_weights"]
         elif weights_type == "similarity":

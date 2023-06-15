@@ -190,6 +190,7 @@ def generate_attention_map(img_path, vit_model, model_type):
 
     # Get the number of heads from the mean distance output.
     num_heads = tf.shape(mean_distances["transformer_block_0_att_mean_dist"])[-1].numpy()
+    # num_heads = 12
 
     # Print the shapes
     print(f"Num Heads: {num_heads}.")
@@ -229,13 +230,19 @@ def get_image_attention_weights(image_id, img_path, vit_model, output_dir="./", 
     
     preprocessed_img_orig, attentions = generate_attention_map(img_path, vit_model, model_type)
 
+    # average attention of 12 heads attention
+    sum_attentions = tf.constant(np.zeros([RESOLUTION, RESOLUTION], dtype='float32'))
+    for i in range(12):
+        sum_attentions = tf.add(sum_attentions, attentions[..., i])
+    avg_attention = sum_attentions/12
+    
     plt.imshow(preprocessed_img_orig[0])
-    plt.imshow(attentions[..., 11], cmap="inferno", alpha=0.5)
+    plt.imshow(avg_attention, cmap="inferno", alpha=0.5)
     plt.title(f'{image_id}')
     plt.savefig(f'{output_dir}/{image_id}_attention_map.png')
 
-    attention_map = attentions[..., 11].numpy()
-    print(attention_map)
+    attention_map = avg_attention.numpy()
+    # print(attention_map)
     attention_patches = []
     attention_weights = []
 
@@ -247,7 +254,7 @@ def get_image_attention_weights(image_id, img_path, vit_model, output_dir="./", 
             attention_patch = attention_map[i*74+1:(i+1)*74+1, j*74+1:(j+1)*74+1]
             attention_patches.append(attention_patch)
             attention_weights.append(np.sum(attention_patch))
-            print("patch",i,j,np.shape(attention_patch))
+            # print("patch",i,j,np.shape(attention_patch))
 
     #         plt.figure()
             # axes[i, j].imshow(attention_patch, interpolation='none')
@@ -255,7 +262,7 @@ def get_image_attention_weights(image_id, img_path, vit_model, output_dir="./", 
             # axes[i, j].axis("off")
             
             
-    print(np.shape(attention_patches))
+    # print(np.shape(attention_patches))
     print(attention_weights)
 
     center_weight = attention_weights[4]

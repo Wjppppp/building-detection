@@ -9,6 +9,7 @@ from math import sin, cos, acos, atan2, radians, pi, atan, exp
 from sklearn.preprocessing import normalize
 import numpy as np
 from PIL import Image
+import time
 import cv2
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Suppress TensorFlow logging (1)
@@ -122,7 +123,7 @@ def calculate_image_similarity(img1, img2, channel):
     # similarity = cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
     # gray_similarity = cv2.compareHist(cv2.calcHist([img1_gray], [0], None, [256], [0, 256]), cv2.calcHist([img2_gray], [0], None, [256], [0, 256]), cv2.HISTCMP_CORREL)
     similarity = similarity / channel
-    print("similarity", similarity)
+    # print("similarity", similarity)
     # print("gray_similarity", gray_similarity)
     return similarity
 
@@ -167,7 +168,7 @@ def image_similarity_weights():
 
         average_similarity.append(similarity/len(ref_image_paths))
 
-        print("Average Similarity between {} and {} is {} \n".format(ref_dir, target_image_path, average_similarity[i]))     
+        # print("Average Similarity between {} and {} is {} \n".format(ref_dir, target_image_path, average_similarity[i]))     
 
         # img1 = cv2.imread('img5.png')
         # img2 = cv2.imread('img2.png')
@@ -194,7 +195,7 @@ def tile_to_ref_average_similarity_weights(tile_id):
 
         ref_image_path = IMAGE_DIR + ref_dir + "/"
         ref_image_paths = load_images(ref_image_path)
-        print(ref_image_paths)
+        # print(ref_image_paths)
 
         similarity = 0
 
@@ -206,9 +207,10 @@ def tile_to_ref_average_similarity_weights(tile_id):
 
         average_similarity.append(similarity/len(ref_image_paths))
 
-        print("Average Similarity between {} and {} is {} \n".format(ref_dir, target_image_path, average_similarity)) 
+        # print("Average Similarity between {} and {} is {} \n".format(ref_dir, target_image_path, average_similarity)) 
 
     norm_average_similarity = normalize_weights(np.array(average_similarity))
+    print("normalized averaged similarity weight is", norm_average_similarity)
 
     return norm_average_similarity
 
@@ -236,15 +238,15 @@ def tile_to_ref_distance_weights(tile_id):
     
     tileX, tileY, zoom = parse_tile_name(tile_id)
 
-    print("tile id: ", tile_id)
-    print(tileX, tileY, zoom)
+    # print("tile id: ", tile_id)
+    # print(tileX, tileY, zoom)
 
     c_pixelX = tileX * 256 + 127
     c_pixelY = tileY * 256 + 127
 
     c_lon, c_lat = pixel_coords_zoom_to_lat_lon(c_pixelX, c_pixelY, zoom)
 
-    print(c_lon, c_lat)
+    # print(c_lon, c_lat)
 
     # distance weights
     distance, distance_weight = distance_weights(c_lon, c_lat)
@@ -304,11 +306,13 @@ def tile_to_ref_weights():
     vit_model = load_model(MODELS_ZIP["vit_dino_base16"])
     print("Model loaded.")
 
-    for tile_name in tile_dir:
-
+    for i, tile_name in enumerate(tile_dir):
+        
         # image id
         tile_id = os.path.splitext(os.path.basename(tile_name))[0]
-        
+
+        print("\nCalculating weights for {}, {}\n".format(i, tile_id))
+
         # # distance weights
         distance_weights = tile_to_ref_distance_weights(tile_id)
 
@@ -343,13 +347,14 @@ if __name__ == '__main__':
     # c_box = [10.1926316905051912,5.6555060217455528,10.2352523789601566,5.6722064157053831]
     # c_lon_target, c_lat_target = get_center_latlon(c_box)
     # distance, distance_weight = distance_weights(c_lon_target, c_lat_target)
-    
+    print("Start calculating weights ...")
+    start_time = time.time()
     weight_dict_list = tile_to_ref_weights()
     # Writing to json file
     with open("all_weights.json","w", encoding='utf-8') as file:
         json.dump(weight_dict_list, file)
     
-    print("done")
+    print("done. time used: {}".format(time.time()-start_time))
     # # Writing to file
     # with open("weights.txt", "a") as file:
     #     # Writing data to a file
