@@ -16,6 +16,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Suppress TensorFlow logging (1)
 import pathlib
 import random
 import json
+from merge_image_patch import merge_images
+from vit_representations import get_image_attention_weights, load_model, MODELS_ZIP
 
 IMAGE_DIR = './sample_images/'
 
@@ -127,56 +129,78 @@ def calculate_image_similarity(img1, img2, channel):
     # print("gray_similarity", gray_similarity)
     return similarity
 
-def image_similarity_weights():
+# def image_similarity_weights():
 
-    ref_dirs = os.listdir(IMAGE_DIR)
+#     ref_dirs = os.listdir(IMAGE_DIR)
     
-    # ref_paths = load_images(IMAGE_DIR)
-    target_dir = ref_dirs.pop()
-    print(target_dir)
+#     # ref_paths = load_images(IMAGE_DIR)
+#     target_dir = ref_dirs.pop()
+#     print(target_dir)
 
-    # target image path list
-    target_image_path = IMAGE_DIR+target_dir+"/"
-    target_image_paths = load_images(target_image_path)
-    # print(target_image_paths)
+#     # target image path list
+#     target_image_path = IMAGE_DIR+target_dir+"/"
+#     target_image_paths = load_images(target_image_path)
+#     # print(target_image_paths)
 
-    average_similarity = []
+#     average_similarity = []
 
-    for i, ref_dir in enumerate(ref_dirs):
-        print("Image similarity between {} and {}".format(ref_dir, target_image_path))
-        # reference image path list
-        ref_image_paths = load_images(IMAGE_DIR+ref_dir+"/")
-        # print("ref",ref_image_paths)
-        length = len(ref_image_paths)
-        # print(length)
+#     for i, ref_dir in enumerate(ref_dirs):
+#         print("Image similarity between {} and {}".format(ref_dir, target_image_path))
+#         # reference image path list
+#         ref_image_paths = load_images(IMAGE_DIR+ref_dir+"/")
+#         # print("ref",ref_image_paths)
+#         length = len(ref_image_paths)
+#         # print(length)
 
-        # pick random image samples from target area 
-        target_image_samples = random.sample(target_image_paths, length)
-        # print("samples", target_image_samples)
+#         # pick random image samples from target area 
+#         target_image_samples = random.sample(target_image_paths, length)
+#         # print("samples", target_image_samples)
 
-        similarity = 0
+#         similarity = 0
 
-        for j, image_path in enumerate(ref_image_paths):
+#         for j, image_path in enumerate(ref_image_paths):
 
-            # print(i, image_path)
-            # print("target", target_image_samples[i])
+#             # print(i, image_path)
+#             # print("target", target_image_samples[i])
 
-            img1 = cv2.imread(image_path)
-            img2 = cv2.imread(target_image_samples[j])
+#             img1 = cv2.imread(image_path)
+#             img2 = cv2.imread(target_image_samples[j])
 
-            similarity += calculate_image_similarity(img1, img2, 3)
+#             similarity += calculate_image_similarity(img1, img2, 3)
 
-        average_similarity.append(similarity/len(ref_image_paths))
+#         average_similarity.append(similarity/len(ref_image_paths))
 
-        # print("Average Similarity between {} and {} is {} \n".format(ref_dir, target_image_path, average_similarity[i]))     
+#         # print("Average Similarity between {} and {} is {} \n".format(ref_dir, target_image_path, average_similarity[i]))     
 
-        # img1 = cv2.imread('img5.png')
-        # img2 = cv2.imread('img2.png')
+#         # img1 = cv2.imread('img5.png')
+#         # img2 = cv2.imread('img2.png')
 
-    print("Average Similarity List", average_similarity)
-    similarity_weights = normalize_weights(np.array(average_similarity))
+#     print("Average Similarity List", average_similarity)
+#     similarity_weights = normalize_weights(np.array(average_similarity))
 
-    return average_similarity, similarity_weights
+#     return average_similarity, similarity_weights
+
+
+
+def normalize_weights(weight):
+
+    norm_weights = normalize(weight[:,np.newaxis], axis=0, norm='l1').ravel()
+    print("weights:", norm_weights, "\nsum of weights:",sum(norm_weights), "\n")
+
+    return norm_weights
+
+def pixel_coords_zoom_to_lat_lon(PixelX, PixelY, zoom):
+    MapSize = 256 * pow(2, zoom)
+    x = (PixelX / MapSize) - 0.5
+    y = 0.5 - (PixelY / MapSize)
+    lon = 360 * x
+    lat = 90 - 360 * atan(exp(-y * 2 * pi)) / pi
+
+    return lon, lat
+
+def parse_tile_name(name):
+    zoom, TileX, TileY = [int(x) for x in name.split(".")]
+    return TileX, TileY, zoom
 
 def tile_to_ref_average_similarity_weights(tile_id):
 
@@ -214,26 +238,6 @@ def tile_to_ref_average_similarity_weights(tile_id):
 
     return norm_average_similarity
 
-def normalize_weights(weight):
-
-    norm_weights = normalize(weight[:,np.newaxis], axis=0, norm='l1').ravel()
-    print("weights:", norm_weights, "\nsum of weights:",sum(norm_weights), "\n")
-
-    return norm_weights
-
-def pixel_coords_zoom_to_lat_lon(PixelX, PixelY, zoom):
-    MapSize = 256 * pow(2, zoom)
-    x = (PixelX / MapSize) - 0.5
-    y = 0.5 - (PixelY / MapSize)
-    lon = 360 * x
-    lat = 90 - 360 * atan(exp(-y * 2 * pi)) / pi
-
-    return lon, lat
-
-def parse_tile_name(name):
-    zoom, TileX, TileY = [int(x) for x in name.split(".")]
-    return TileX, TileY, zoom
-
 def tile_to_ref_distance_weights(tile_id):
     
     tileX, tileY, zoom = parse_tile_name(tile_id)
@@ -252,9 +256,6 @@ def tile_to_ref_distance_weights(tile_id):
     distance, distance_weight = distance_weights(c_lon, c_lat)
 
     return distance_weight
-
-from merge_image_patch import merge_images
-from vit_representations import get_image_attention_weights, load_model, MODELS_ZIP
 
 def tile_to_ref_attention_weights(tile_id, vit_model):
 

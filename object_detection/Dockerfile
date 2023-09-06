@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.5.0-gpu
+FROM tensorflow/tensorflow:2.6.1-gpu
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Munich
@@ -22,8 +22,11 @@ RUN pip install geojson
 RUN pip install cython
 
 WORKDIR /app
-COPY . .
+# COPY . .
 
+# Install Onject Detection API
+RUN git clone https://github.com/tensorflow/models
+RUN git clone https://github.com/cocodataset/cocoapi.git
 RUN cd cocoapi/PythonAPI && make &&\
     cp -r pycocotools ../../models/research &&\
     cd ../../models/research &&\

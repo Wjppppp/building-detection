@@ -13,21 +13,21 @@ read -p "Enter the config file you want to use: " CONFIGNAME
 
 echo $CONFIGNAME
 
-# ohsome2label --config config/$CONFIGNAME vector
+ohsome2label --config config/$CONFIGNAME vector
 
-# # start training
-# echo "Do you have correct vector data now?"
-# select yn in "Yes" "No"; do
-#     case $yn in
-#         Yes ) break;;
-#         No ) exit;;
-#     esac
-# done
+# start training
+echo "Do you have correct vector data now?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) break;;
+        No ) exit;;
+    esac
+done
 
 
-# ohsome2label --config config/$CONFIGNAME label
+ohsome2label --config config/$CONFIGNAME label
 
-# ohsome2label --config config/$CONFIGNAME image
+ohsome2label --config config/$CONFIGNAME image
 
 ohsome2label --config config/$CONFIGNAME visualize -t overlay
 

@@ -15,6 +15,7 @@ from shapely.geometry import Polygon
 import geojson
 import time
 import pathlib
+from tqdm import tqdm
 
 
 def load_path(dir_path):
@@ -292,7 +293,7 @@ def main_eval(prediction_path, reference_path, FILTER_THRESHOLD, IOU_THRESHOLD, 
     intersection_df = gpd.overlay(pred_geodf, ref_geodf, how='intersection')
     # print("intersection: \n", intersection_df)
 
-    for i, intersect in enumerate(intersection_df.itertuples()):
+    for intersect in tqdm(intersection_df.itertuples()):
         pred_id = intersect.prediction_id
         ref_id = intersect.ref_id
 
@@ -315,22 +316,17 @@ def main_eval(prediction_path, reference_path, FILTER_THRESHOLD, IOU_THRESHOLD, 
             pred_geodf.loc[pred_geodf['prediction_id'] == pred_id, 'if_correct'] = True #====> TP
             ref_geodf.loc[ref_geodf['ref_id'] == ref_id,'if_detected'] = True #====> TP
             TP += 1
-        
-        # ax = ref_item.plot(linewidth = 2, color="white", edgecolor="green")
-        # ax2 = pred_item.plot(ax=ax, color="red", linewidth = 1, alpha=0.5, edgecolor="red")
-        
-        # print(pred_geodf.loc[pred_geodf['prediction_id'] == pred_id, 'if_correct'])
-        # print(ref_geodf.loc[ref_geodf['ref_id'] == ref_id,'if_detected'])
+
     #     break
 
     total_pred = pred_geodf.shape[0]
     total_ref = ref_geodf.shape[0]
-    
+
     TP = pred_geodf.loc[pred_geodf['if_correct'] == True].shape[0]
     FP = total_pred - TP
     FN = ref_geodf.loc[ref_geodf['if_detected'] == False].shape[0]
 
-    precision = TP/total_pred 
+    precision = TP/total_pred
     recall = TP/(TP+FN)
     f1 = 2*(precision*recall/(precision+recall))
     accuracy = TP/(TP+FP+FN)
@@ -351,12 +347,13 @@ def main_eval(prediction_path, reference_path, FILTER_THRESHOLD, IOU_THRESHOLD, 
     all_predictions_gdf = pd.concat([all_predictions_gdf, pred_geodf])
     all_ref_gdf = pd.concat([all_ref_gdf, ref_geodf])
 
-    all_predictions_gdf.to_file("./evaluation/all_predictions_eval_base.geojson", driver="GeoJSON")  
+    all_predictions_gdf.to_file("./evaluation/all_predictions_eval_base.geojson", driver="GeoJSON")
     all_ref_gdf.to_file("./evaluation/all_reference_eval_base.geojson", driver="GeoJSON")    
 
     return result_metrics
 
 
+import itertools
 if __name__ == "__main__":
 
     import csv
@@ -380,49 +377,63 @@ if __name__ == "__main__":
     # prediction_path = "./ensemble/predictions/prediction-ensemble/merged_prediction_similarity.geojson"
     # prediction_path = "./ensemble/predictions/prediction-ensemble/merged_prediction_average_new.geojson"
     # prediction_path = "./ensemble/predictions/prediction-model-06/merged_prediction.json"
-    prediction_path = "./ensemble/predictions/prediction-base-model/merged_prediction.json"
+    # prediction_path = "./ensemble/random/prediction-ensemble-3/merged_prediction.geojson"
+
+    pred_dir_list = os.listdir("./ensemble/random/")
 
     reference_path = "./evaluation/reference/building_building_.geojson"
 
-     # threshold
+    # threshold
     # IOU_THRESHOLD = 0.3
     # FILTER_THRESHOLD = 0.08
-    COVERAGE_THRESHOLD = 0.8 # if the ratio of intersection area to prediction area higher than this threshold, it means the prediction is mostly covered by reference
-    
+    COVERAGE_THRESHOLD = 0.1 # if the ratio of intersection area to prediction area higher than this threshold, it means the prediction is mostly covered by reference
+
     print("start evaluating...")
     start_time = time.time()
     output_file = "evaluation_matrix.csv"
 
-    header = ["Model", "IOU", "Filter", "TP", "FP", "FN", "predictions", "precision", "accuracy", "recall", "f1"]
+    # output csv file
+    # header = ["Model", "IOU", "Filter", "TP", "FP", "FN", "predictions", "precision", "accuracy", "recall", "f1"]
 
     # with open(output_file,"w") as file:
     #     writer = csv.writer(file)
     #     writer.writerow(header)
 
     # IOU_range = np.arange(0.5, 0.8, 0.1)
-    IOU_range = [0.5]
+    IOU_range = [0.3]
     # Filter_range = np.arange(0.04, 0.15, 0.01)
-    Filter_range = [0]
+    Filter_range = [0.07]
+    # metrics = metrics_statistic(results)
+
+    model = "attention"
+
     # print(IOU_range)
     # print(Filter_range)
-    for IOU_THRESHOLD in IOU_range:
-        for FILTER_THRESHOLD in Filter_range:
-            print("Current evaluation threshold: ", IOU_THRESHOLD, FILTER_THRESHOLD)
+    for IOU_THRESHOLD, FILTER_THRESHOLD in itertools.product(IOU_range, Filter_range):
+        print("Current evaluation threshold: ", IOU_THRESHOLD, FILTER_THRESHOLD)
 
+        for pred_dir in pred_dir_list:
+            prediction_path = f"./ensemble/random/{pred_dir}/merged_prediction.geojson"
+            print(f"prediction path: {prediction_path}")
             metrics = main_eval(prediction_path, reference_path, FILTER_THRESHOLD, IOU_THRESHOLD, COVERAGE_THRESHOLD)
-            # metrics = metrics_statistic(results)
-
-            model = "base"
-
             print("metrics: ", metrics)
-            data = [str(model), IOU_THRESHOLD, FILTER_THRESHOLD, metrics["TP"], metrics["FP"], metrics["FN"], metrics["total_pred"], metrics["precision"], metrics["accuracy"], metrics["recall"], metrics["f1"]]
-                            
+            data = [
+                model,
+                IOU_THRESHOLD,
+                FILTER_THRESHOLD,
+                metrics["TP"],
+                metrics["FP"],
+                metrics["FN"],
+                metrics["total_pred"],
+                metrics["precision"],
+                metrics["accuracy"],
+                metrics["recall"],
+                metrics["f1"],
+            ]
+
             with open(output_file, "a") as file:
                 writer = csv.writer(file)
                 writer.writerow(data)
-        # file.write("{}  {:.2f}  {:.2f}  {}  {}  {}  {}  {:.4f}  {:.4f}  {:.4f}  {:.4f}  \n".format(
-        #     str(model), IOU_THRESHOLD, FILTER_THRESHOLD, metrics["TP"], metrics["FP"], metrics["FN"], metrics["total_pred"], metrics["precision"], metrics["accuracy"], metrics["recall"], metrics["f1"]
-        #     ))
-                
+    
 
-            print("time used: {}".format(time.time() - start_time))
+            print(f"time used: {time.time() - start_time}")

@@ -16,3 +16,9 @@ attention_maps
 sample_images
 temp
 evaluation
+flag_test.py
+*.csv
+weight_map
+ViT_sample_images_fixed
+sample_images
+uncertainty

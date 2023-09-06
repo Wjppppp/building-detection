@@ -2,6 +2,7 @@ import zipfile
 from io import BytesIO
 
 import cv2
+import itertools
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Suppress TensorFlow logging (1)
 import matplotlib.pyplot as plt
@@ -235,11 +236,11 @@ def get_image_attention_weights(image_id, img_path, vit_model, output_dir="./", 
     for i in range(12):
         sum_attentions = tf.add(sum_attentions, attentions[..., i])
     avg_attention = sum_attentions/12
-    
-    plt.imshow(preprocessed_img_orig[0])
-    plt.imshow(avg_attention, cmap="inferno", alpha=0.5)
-    plt.title(f'{image_id}')
-    plt.savefig(f'{output_dir}/{image_id}_attention_map.png')
+
+    # plt.imshow(preprocessed_img_orig[0])
+    # plt.imshow(avg_attention, cmap="inferno", alpha=0.5)
+    # plt.title(f'{image_id}')
+    # plt.savefig(f'{output_dir}/{image_id}_attention_map.png')
 
     attention_map = avg_attention.numpy()
     # print(attention_map)
@@ -249,26 +250,17 @@ def get_image_attention_weights(image_id, img_path, vit_model, output_dir="./", 
     # fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(13, 13))
     # img_count = 0
 
-    for i in range(3):
-        for j in range(3):
-            attention_patch = attention_map[i*74+1:(i+1)*74+1, j*74+1:(j+1)*74+1]
-            attention_patches.append(attention_patch)
-            attention_weights.append(np.sum(attention_patch))
-            # print("patch",i,j,np.shape(attention_patch))
-
-    #         plt.figure()
-            # axes[i, j].imshow(attention_patch, interpolation='none')
-            # axes[i, j].title.set_text(f"patch: {i},{j}")
-            # axes[i, j].axis("off")
-            
-            
+    for i, j in itertools.product(range(3), range(3)):
+        attention_patch = attention_map[i*74+1:(i+1)*74+1, j*74+1:(j+1)*74+1]
+        attention_patches.append(attention_patch)
+        attention_weights.append(np.sum(attention_patch))
     # print(np.shape(attention_patches))
     print(attention_weights)
 
     center_weight = attention_weights[4]
     for i in range(len(attention_weights)):
         attention_weights[i] =  attention_weights[i]/center_weight
-        
+
     # attention_weights.pop(4)
     print(attention_weights)
 
